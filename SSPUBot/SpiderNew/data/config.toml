@@ -1,0 +1,45 @@
+[SSPUWebSiteUsesRequestsInfoSource]
+urls = ["https://jwc.sspu.edu.cn/897/list.htm", "https://jwc.sspu.edu.cn/898/list.htm"]
+
+[SSPUWebSiteUsesRequestsInfoSource.system_content]
+task0_transformer = "请将以下内容转为markdown格式，并删除无关内容，如广告等。"
+task1 = "以下内容为基础，标注tag，如果是表示获奖内容的，就标注“获奖”，如果是表示通知公告的，就标注“通知公告”，如果是表示新闻报道的，就标注“新闻报道”，如果是表示学术讲座的，就标注“学术讲座”，如果是表示招聘信息的，就标注“招聘信息”，如果是其他内容，就标注“其他”，并且你还要根据内容提炼出标签，如“学籍信息核查”，“学信网”等，你只需按“标签1 标签2”的格式生成即可，注意不要使用markdown格式，还有tag越能体现内容越好，不要出现重复标签"
+task2 = "写出这篇文章的梗概，不要使用markdown格式，只需生成一段文本即可，无需分段，内容要涵盖主要信息点，不能出现任何的URL链接，就算是正文的URL链接也不要出现"
+task3 = "我将会给你两个文本的内容，分别叫A和B，你只能生成“通过”和“驳回”，及其原因"
+task4 = "按照用户给出的提示词要求生成东西，注意不要使用markdown格式"
+
+[SSPUWebSiteUsesRequestsInfoSource.system_content.RemonstrationOfficial]
+task0_check_Date = {content="如果出现日期，你应该将这些日期给列出来，格式为“YYYY-MM-DD”，如果只有“MM-DD”，你应该从发布时间去寻找年份，并补全为“YYYY-MM-DD”，如果出现“YYYY-MM-DD HH:MM”格式或者“MM-DD HH:MM:SS”格式的日期时间要使用东八区的时间（UTC+8）去解析日期时间，然后，将其放在一个Python列表中，之后写一段代码，获得当前日期对应的星期，然后将结果和对应的日期放在一行中，格式为“YYYY-MM-DD 星期X”，最后将这些内容以非markdown文本的形式，直接生成代码就好，不用生成别的", use_python_code=true, need_python_result=false}
+task1_edit_content = {content="根据给出的Python运行结果，将对应的星期补全到文章当中的每个日期后面，如果出现错误，请修正错误，然后以非markdown文本的形式输出最终结果", use_python_code=false, need_python_result=true }
+task1_edit_content_non_python_code = {content="", use_python_code=false, need_python_result=false }
+fix_code_bug = {content="请修正上面代码中的错误，然后以非markdown文本的形式输出修正后的代码，直接生成代码就好，不用生成别的", use_python_code=true, need_python_result=false }
+fix_code_bug_retry_max = 5
+
+[SSPUWebSiteUsesGeckodriverInfoSource]
+binary_location_path = ""   # Path to Firefox binary
+geckodriver_path = ""   # Path to geckodriver executable
+wait_time_seconds = 10
+system_content = { task1 = "看看Chinese部分有没有缺失，有的话就直接翻译它，然后，将已翻译的和已经被你翻译的整合到一起", task2 = "提炼出里面的要点", task3 = "分析这些要点对于经济局势的影响", result = "将能影响经济局势的要点进行详细分析，给出需要关注的股市板块。不要使用markdown" }
+
+[MSSQLPackage]
+host = "127.0.0.1"
+port = 1433
+username = ''   # Database username
+password = ''   # Database password
+database = ''   # Database name
+
+[LNLPM]
+ai_model = ["qwen/qwen-2.5-vl-7b-instruct:free"]
+api_key = ""    # Your API key for the language model service
+
+[qqbot]
+enable = false
+appid = ""   # Your QQ bot appid
+secret = ""     # Your QQ bot secret
+analyzeInput = "帮我分析一下用户的意图，你可以这样理解用户的意图，如果用户提出“获得新的信息”，你可以认为是“获得数据库内按照发布时间排序的前10条信息，并且只要把ReleaseAt字段和Title字段作为结果”，如果用户提出“这个学校会有什么比赛”，你可以认为是“在数据库中寻找Tags列含有‘比赛’的记录，然后整理成一行一行的不需要有序号的非markdown文本"
+generateSQLScript = "根据用户的意图，帮我生成对应的SQL查询语句，只需要SQL语句，还有数据表是“dbo.Posts”，Posts表有“ID”、“Title”、“content”、“tags”、“simplifiedContent”、“FetchedAt”、“ReleaseAt”等字段，注意SQL语句要符合MSSQL的语法规范，还有如果要发出文章的话，就只要把Title字段和ReleaseAt字段作为结果返回"
+
+[WebApi]
+enable = false
+host = "127.0.0.1"
+port = 8000

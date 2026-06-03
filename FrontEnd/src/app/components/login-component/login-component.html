@@ -1,0 +1,45 @@
+<form (ngSubmit)="login()" #loginForm="ngForm" *ngIf="deviceInfo?.browser !== 'Unknown'"
+      class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md flex flex-col">
+    <div>
+        <label for="username">用户名：</label>
+        <input type="text" id="username" name="username" [(ngModel)]="username" required/>
+    </div>
+    <div>
+        <label for="password">密码：</label>
+        <input type="password" id="password" name="password" [(ngModel)]="password" required/>
+    </div>
+    <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
+    <div class="flex items-center flex-row mt-2">
+        <button type="submit" [disabled]="loginForm.invalid"
+                class="flex flex-col justify-center items-center w-36 h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                aria-label="登录">
+            <span>登录</span>
+        </button>
+        <button type="button" (click)="navigateToRegister()"
+                class="ml-2 w-36 h-10 flex flex-col justify-center items-center bg-transparent border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                aria-label="注册">
+            注册
+        </button>
+    </div>
+<!--    <button type="button" (click)="navigateToForgotPassword()"-->
+<!--            class="mt-4 text-sm text-blue-600 hover:underline focus:outline-none"-->
+<!--            aria-label="忘记密码">-->
+<!--        忘记密码？-->
+<!--    </button>-->
+<!--    <button type="button" (click)="usingPasskeyLogin()"-->
+<!--            class="mt-2 text-sm text-blue-600 hover:underline focus:outline-none"-->
+<!--            aria-label="使用密钥登录">-->
+<!--        使用密钥登录-->
+<!--    </button>-->
+</form>
+<form *ngIf="deviceInfo?.browser === 'Unknown'" action="{{websiteDesignService.loginForIEApi}}" method="post">
+    <div>
+        <label for="username">用户名：</label>
+        <input type="text" id="username1" name="username" [(ngModel)]="username" required/>
+    </div>
+    <div>
+        <label for="password">密码：</label>
+        <input type="password" id="password1" name="password" [(ngModel)]="password" required/>
+    </div>
+    <button type="submit">登录</button>
+</form>

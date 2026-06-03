@@ -1,0 +1,287 @@
+/* --- 1. 全局设置 --- */
+:host {
+    display: block;
+    min-height: 100vh;
+    /* 深色底色，更能衬托玻璃的光泽 */
+    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    color: #1d1d1f;
+    overflow-x: hidden; /* 防止背景球体溢出 */
+}
+
+.macos-desktop {
+    padding: 40px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+/* --- 2. 液态流动背景 (Liquid Background) --- */
+.liquid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* 放在最底层 */
+    overflow: hidden;
+    background: #fff; /* 兜底白色 */
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px); /* 极致模糊，制造弥散感 */
+    opacity: 0.6;
+    animation: float 10s infinite ease-in-out alternate;
+}
+
+/* 紫色光斑 */
+.blob-1 {
+    top: -10%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background-color: #f0f2f5;
+    animation-duration: 12s;
+}
+
+/* 蓝色光斑 */
+.blob-2 {
+    bottom: -10%;
+    right: -10%;
+    width: 40vw;
+    height: 40vw;
+    background-color: #f0f2f5;
+    animation-duration: 15s;
+    animation-direction: alternate-reverse;
+}
+
+/* 橙色光斑 (居中游动) */
+.blob-3 {
+    top: 30%;
+    left: 30%;
+    width: 30vw;
+    height: 30vw;
+    background-color: #f0f2f5;
+    animation-duration: 9s;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(30px, 50px) scale(1.1);
+    }
+    100% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+}
+
+/* --- 3. 遮罩层 --- */
+/* 遮罩层样式 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4); /* 深色半透明背景 */
+  backdrop-filter: blur(5px);      /* 背景模糊效果 */
+  z-index: 900;                   /* 层级高 */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- 4. 液态玻璃卡片 (Liquid Glass Style) --- */
+.widget-card {
+    position: relative;
+
+    /* 核心：更透明的背景，配合高斯模糊 */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(25px) saturate(150%);
+    -webkit-backdrop-filter: blur(25px) saturate(150%); /* Safari 兼容 */
+
+    border-radius: 24px;
+
+    /* 玻璃光泽：利用 linear-gradient 模拟反光 */
+    background-image: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.4) 0%,
+            rgba(255, 255, 255, 0.1) 100%
+    );
+
+    /* 边框：左上亮（受光面），右下暗（背光面） */
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+    /* 阴影：增加带颜色的阴影，让它看起来更透亮 */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1), /* 主阴影 */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1); /* 内发光 */
+
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden; /* 裁剪溢出 */
+
+    /* 悬停效果：卡片变得更实、更亮 */
+    &:not(.expanded):hover {
+        transform: translateY(-8px) scale(1.02);
+        background: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 20px 40px -10px rgba(31, 38, 135, 0.2),
+        inset 0 0 20px rgba(255, 255, 255, 0.5); /* 内部高光增强 */
+        border-color: rgba(255, 255, 255, 0.9);
+    }
+}
+
+/* 放大状态 */
+.widget-card.expanded {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 90vw;
+    height: 85vh;
+    max-width: 1000px;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+
+    /* 放大时背景更不透明，保证内容阅读体验 */
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.3);
+
+    .card-content {
+        overflow-y: auto;
+        /* 滚动条隐藏或美化 */
+        &::-webkit-scrollbar {
+            width: 0;
+        }
+    }
+}
+
+/* --- 5. 内容样式微调 --- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    /* 分隔线也用渐变 */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2b2b2b;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 文字轻微浮起 */
+}
+
+/* 按钮样式优化 */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+        background: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: rotate(90deg);
+    }
+}
+
+/* 列表样式 */
+.card-content {
+    flex: 1;
+}
+
+ol.macos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+ol.macos-list li {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    /* 列表项背景也带一点点透明 */
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid transparent;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.6);
+        border-color: rgba(255, 255, 255, 0.8);
+        transform: translateX(5px);
+    }
+}
+
+.index-badge {
+    /* 1. 布局核心：保证内容在正中心 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* 2. 形状核心：设定固定的宽和高，且相等 */
+    width: 28px;
+    height: 28px;
+
+    /* 3. 去掉 padding，完全靠宽高控制大小 */
+    padding: 0 !important;
+
+    /* 4. 变成正圆 */
+    border-radius: 50% !important;
+
+    /* 防止被挤压变形 */
+    flex-shrink: 0;
+
+    /* --- 其他装饰样式保持不变 --- */
+    font-size: 12px;
+    color: #fff;
+    background: rgba(128, 128, 128, 0.3); /* 你的半透明灰色 */
+    margin-right: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    /* 开启数字等宽，防止 '1' 和 '8' 视觉重心不同 (可选) */
+    font-variant-numeric: tabular-nums;
+}
+
+.list-text {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

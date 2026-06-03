@@ -1,0 +1,141 @@
+<div class="profile-edit-container">
+  <div *ngIf="loading" class="loading">加载中...</div>
+
+  <div *ngIf="!loading" class="profile-form">
+    <form (ngSubmit)="saveProfile()">
+      <div class="form-section">
+        <h2>基本信息</h2>
+
+        <div class="form-group">
+          <label for="displayName">显示名称</label>
+          <input
+            type="text"
+            id="displayName"
+            [(ngModel)]="profile.displayName"
+            name="displayName"
+            class="form-control"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="birthDate">出生年月</label>
+          <input
+            type="date"
+            id="birthDate"
+            [(ngModel)]="profile.birthDate"
+            name="birthDate"
+            class="form-control">
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="profile.isSchoolStudent"
+              name="isSchoolStudent">
+            我是本校学生 or 曾经是本校学生
+          </label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>学历信息</h2>
+
+        <div class="form-group">
+          <label for="educationLevel">最高学历</label>
+          <select
+            id="educationLevel"
+            [(ngModel)]="profile.educationLevel"
+            name="educationLevel"
+            class="form-control">
+            <option value="">请选择</option>
+            <option value="高中">高中</option>
+            <option value="大专">大专</option>
+            <option value="本科">本科</option>
+            <option value="硕士">硕士</option>
+            <option value="博士">博士</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="graduatedSchool">毕业学校</label>
+          <input
+            type="text"
+            id="graduatedSchool"
+            [(ngModel)]="profile.graduatedSchool"
+            name="graduatedSchool"
+            class="form-control"
+            placeholder="例如：上海第二工业大学">
+        </div>
+
+        <div class="form-group">
+          <label for="enrollmentDate">入学时间</label>
+          <input
+            type="date"
+            id="enrollmentDate"
+            [(ngModel)]="profile.enrollmentDate"
+            name="enrollmentDate"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="graduationDate">毕业时间</label>
+          <input
+            type="date"
+            id="graduationDate"
+            [(ngModel)]="profile.graduationDate"
+            name="graduationDate"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>个人兴趣</h2>
+
+        <div class="form-group">
+          <label for="hobbies">爱好</label>
+          <input
+            type="text"
+            id="hobbies"
+            [(ngModel)]="profile.hobbies"
+            name="hobbies"
+            class="form-control"
+            placeholder="多个爱好用逗号分隔，例如：阅读,旅游,编程">
+          <small class="form-hint">多个爱好请用逗号分隔</small>
+        </div>
+
+        <div class="form-group">
+          <label for="fromLocation">来自哪里</label>
+          <input
+            type="text"
+            id="fromLocation"
+            [(ngModel)]="profile.fromLocation"
+            name="fromLocation"
+            class="form-control"
+            placeholder="例如：上海市浦东新区">
+        </div>
+
+        <div class="form-group">
+          <label for="wantToGo">想去哪里</label>
+          <input
+            type="text"
+            id="wantToGo"
+            [(ngModel)]="profile.wantToGo"
+            name="wantToGo"
+            class="form-control"
+            placeholder="多个地点用逗号分隔，例如：北京,东京,巴黎">
+          <small class="form-hint">多个地点请用逗号分隔</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          {{ saving ? '保存中...' : '保存' }}
+        </button>
+        <button type="button" (click)="goBack()" class="btn btn-secondary">
+          取消
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

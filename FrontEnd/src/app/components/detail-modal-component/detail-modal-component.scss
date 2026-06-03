@@ -1,0 +1,349 @@
+// 变量定义
+$primary-color: #007aff;
+$text-color: #333;
+$glass-bg: rgba(255, 255, 255, 0.95);
+$glass-border: rgba(255, 255, 255, 0.6);
+
+// 核心弹窗容器
+.modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    // 尺寸设置
+    width: 800px;
+    max-width: 90vw;
+    // 关键：限制最大高度，内容多了才会滚动
+    max-height: 90vh;
+    height: 75vh; // 高度自适应内容，直到达到 max-height
+    min-height: 400px;
+
+    z-index: 1001;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+
+    background: $glass-bg;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid $glass-border;
+
+    animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    // === 关键布局：让头部固定，身体滚动 ===
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; // 防止圆角被内部滚动条破坏
+
+    // 头部样式
+    .modal-header {
+        // 关键：防止被压缩
+        flex-shrink: 0;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center; // 整个头部垂直居中
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        height: 40px; // 给头部一个明确的高度基准，防止跳动
+
+        // 左侧容器：包含 [返回按钮] 和 [标题]
+        .header-left {
+            display: flex;
+            align-items: center; // 关键：让内部的按钮和标题垂直居中对齐
+            gap: 12px; // 按钮和标题之间的间距
+            flex: 1; // 占据左侧剩余空间
+            min-width: 0; // 关键：修复 Flexbox 内部文本溢出省略号失效的问题
+            margin-right: 20px; // 防止标题太长顶到右边的关闭按钮
+
+            // 返回按钮样式 (包含之前的悬浮动画)
+            .back-btn {
+                flex-shrink: 0; // 关键：防止标题太长把按钮挤扁
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                padding: 8px; // 稍微调整内边距，使其高度适中
+
+                background: rgba(0, 0, 0, 0.04);
+                border: 1px solid rgba(0, 0, 0, 0.05);
+                border-radius: 50%;
+
+                color: $primary-color;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+                span {
+                    display: inline-block;
+                    transition: transform 0.25s ease;
+                    font-size: 14px; // 箭头大小
+                    line-height: 1; // 防止箭头垂直偏移
+                    margin-top: -1px; // 微调箭头位置
+                }
+
+                &:hover {
+                    background: $primary-color;
+                    color: white;
+                    border-color: transparent;
+                    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+                }
+
+                &:active {
+                    transform: scale(0.96);
+                }
+            }
+
+            // 标题样式
+            h2 {
+                margin: 0; // 关键：去除默认边距
+                font-size: 1.25rem;
+                color: $text-color;
+                font-weight: 600;
+                line-height: 1.2; // 收紧行高，更容易居中
+
+                // 文本溢出处理
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                // 详情模式下的微调（可选）
+                &.detail-title {
+                    font-size: 1.1rem; // 详情页标题稍微小一点点，显得精致
+                    color: #000;
+                }
+            }
+        }
+
+        .close-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+            font-size: 13px;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.1);
+                color: #000;
+                transform: scale(1.05);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+
+    // 内容主体 (滚动区域)
+    .modal-body {
+        // 关键：占据剩余空间
+        flex: 1;
+        // 关键：开启垂直滚动
+        overflow-y: auto;
+
+        padding-top: 16px; // 给内容顶部留点白
+        padding-right: 4px; // 防止滚动条盖住文字
+
+        // 移动端顺滑滚动
+        -webkit-overflow-scrolling: touch;
+
+        // === 滚动条美化 (Webkit) ===
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15); // 浅灰色滑块
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3); // 悬停变深
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 16px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                display: flex;
+                align-items: center;
+                margin-bottom: 6px;
+                padding: 6px 10px;
+                border-radius: 8px;
+                transition: background 0.2s;
+                cursor: pointer;
+
+                &:hover {
+                    background: rgba(0, 0, 0, 0.04);
+                }
+
+                .badge {
+                    background: linear-gradient(135deg, $primary-color, lighten($primary-color, 15%));
+                    color: white;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    margin-right: 10px;
+                    flex-shrink: 0;
+                    box-shadow: 0 2px 4px rgba($primary-color, 0.25);
+                }
+
+                .link-item {
+                    text-decoration: none;
+                    color: $text-color;
+                    font-weight: 500;
+                    font-size: 14px;
+                    flex: 1;
+                }
+            }
+        }
+    }
+}
+
+// 详情页样式
+.post-detail {
+    padding: 10px 4px;
+    animation: fadeIn 0.3s ease;
+
+    .meta-info {
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .content-box {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #444;
+        margin-bottom: 24px;
+        background: rgba(255, 255, 255, 0.4);
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .file-info-container {
+        margin-bottom: 24px;
+        background: rgba(245, 245, 247, 0.6); // 浅灰背景
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+
+        .info-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .file-list {
+            display: flex;
+            flex-wrap: wrap; // 文件多了自动换行
+            gap: 10px; // 文件之间的间距
+
+            .file-chip {
+                display: flex;
+                align-items: center;
+                background: #fff;
+                padding: 8px 12px;
+                border-radius: 8px;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                transition: all 0.2s;
+                cursor: default; // 鼠标样式
+
+                &:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+                    border-color: rgba(0, 0, 0, 0.15);
+                }
+
+                .file-icon {
+                    font-size: 18px; // 图标稍微大一点
+                    margin-right: 8px;
+                    line-height: 1;
+                }
+
+                .file-name {
+                    font-size: 13px;
+                    color: #555;
+                    font-weight: 500;
+
+                    // 防止文件名太长
+                    max-width: 200px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+
+    .action-area {
+        display: flex;
+        justify-content: flex-end; // 按钮居右
+        margin-top: 20px;
+
+        .primary-btn {
+            display: inline-block;
+            background: $primary-color;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 20px; // 圆角按钮
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(0, 122, 255, 0.4);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+    }
+}
+
+// 动画定义
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -45%) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}

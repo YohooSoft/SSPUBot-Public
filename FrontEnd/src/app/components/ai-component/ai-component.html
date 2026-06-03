@@ -1,0 +1,175 @@
+<div class="chat-container" (click)="closeMoreMenu(); closeContextMenu()">
+  <!-- Bot Selection Sidebar -->
+  <div class="bot-sidebar">
+    <div class="bot-sidebar-header">
+      <h3>可用机器人</h3>
+      <button *ngIf="!isLoadingBots" (click)="loadBots()" class="refresh-button" title="刷新列表">
+        🔄
+      </button>
+    </div>
+
+    <div *ngIf="isLoadingBots" class="loading-bots">
+      <span class="spinner">⟳</span> 加载中...
+    </div>
+
+    <div *ngIf="!isLoadingBots && bots.length === 0" class="no-bots">
+      暂无可用机器人
+    </div>
+
+    <div class="bot-list">
+      <div *ngFor="let bot of bots"
+           [class.selected]="selectedBot?.id === bot.id"
+           class="bot-item"
+           (click)="selectBot(bot)">
+        <div class="bot-avatar">
+          <img *ngIf="bot.avatarUrl && bot.avatarUrl.startsWith('http')"
+               [src]="bot.avatarUrl"
+               [alt]="bot.name"
+               class="bot-avatar-img">
+          <span *ngIf="!bot.avatarUrl || !bot.avatarUrl.startsWith('http')">{{ bot.avatarUrl || '🤖' }}</span>
+        </div>
+        <div class="bot-info">
+          <div class="bot-name">{{ bot.name }}</div>
+          <div class="bot-description">{{ bot.description || '点击开始对话' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-main">
+    <!-- Chat Header with More Button -->
+    <div class="chat-header" *ngIf="selectedBot">
+      <div class="chat-title">
+        <h3>{{ selectedBot.name }}</h3>
+      </div>
+      <div class="chat-actions">
+        <button class="more-button" (click)="toggleMoreMenu(); $event.stopPropagation()" title="更多">
+          ⋮
+        </button>
+        <!-- More Menu Dropdown -->
+        <div class="more-menu" *ngIf="showMoreMenu" (click)="$event.stopPropagation()">
+          <button (click)="clearChatHistory()">清除所有聊天记录</button>
+          <button (click)="updateMemory()">更新记忆</button>
+          <button (click)="openMemoryManagement()">管理记忆</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Messages Area -->
+    <div class="chat-messages" #chatMessages>
+      <div *ngFor="let message of messages"
+           [class]="'message-wrapper ' + message.role"
+           (contextmenu)="onMessageRightClick($event, message)">
+        <div class="message-content">
+          <div class="message-avatar">
+            <span *ngIf="message.role === 'user'">👤</span>
+            <img *ngIf="message.role === 'assistant' && selectedBot?.avatarUrl && selectedBot?.avatarUrl?.startsWith('http')"
+                 [src]="selectedBot?.avatarUrl || ''"
+                 [alt]="selectedBot?.name || 'Bot'"
+                 class="message-avatar-img">
+            <span *ngIf="message.role === 'assistant' && (!selectedBot?.avatarUrl || !selectedBot?.avatarUrl?.startsWith('http'))">{{ selectedBot?.avatarUrl || '🤖' }}</span>
+          </div>
+          <div class="message-bubble">
+            <app-markdown-component [markdownContent]="message.content"></app-markdown-component>
+            <div class="message-time">{{ message.timestamp | date: 'HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading" class="message-wrapper assistant">
+        <div class="message-content">
+          <div class="message-avatar">
+            <img *ngIf="selectedBot?.avatarUrl && selectedBot?.avatarUrl?.startsWith('http')"
+                 [src]="selectedBot?.avatarUrl || ''"
+                 [alt]="selectedBot?.name || 'Bot'"
+                 class="message-avatar-img">
+            <span *ngIf="!selectedBot?.avatarUrl || !selectedBot?.avatarUrl?.startsWith('http')">{{ selectedBot?.avatarUrl || '🤖' }}</span>
+          </div>
+          <div class="message-bubble">
+            <div class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <div class="input-container">
+        <textarea
+          [(ngModel)]="userInput"
+          (keydown)="onKeyDown($event)"
+          placeholder="输入消息... / Type a message..."
+          rows="1"
+          [disabled]="isLoading || !selectedBot"
+        ></textarea>
+        <button
+          (click)="onSendMessage()"
+          [disabled]="!userInput.trim() || isLoading || !selectedBot"
+          class="send-button"
+          aria-label="发送消息">
+          <span *ngIf="!isLoading">➤</span>
+          <span *ngIf="isLoading" class="spinner">⟳</span>
+        </button>
+      </div>
+      <div class="input-hint">
+        <span *ngIf="!selectedBot" style="color: #ef4444;">请先从左侧选择一个机器人</span>
+        <span *ngIf="selectedBot">按 Enter 发送，Shift + Enter 换行 / Press Enter to send, Shift + Enter for new line</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-menu" *ngIf="showContextMenu"
+       [style.left.px]="contextMenuX"
+       [style.top.px]="contextMenuY"
+       (click)="$event.stopPropagation()">
+    <button (click)="copyMessage()">复制消息</button>
+    <button (click)="deleteMessage()">删除消息</button>
+  </div>
+
+  <!-- Memory Management Dialog -->
+  <div class="memory-dialog-overlay" *ngIf="showMemoryDialog" (click)="closeMemoryDialog()">
+    <div class="memory-dialog" (click)="$event.stopPropagation()">
+      <div class="memory-dialog-header">
+        <h2>管理记忆</h2>
+        <button class="close-button" (click)="closeMemoryDialog()">✕</button>
+      </div>
+      <div class="memory-dialog-content">
+        <!-- Bot List (30%) -->
+        <div class="memory-bot-list">
+          <h3>机器人列表</h3>
+          <div *ngIf="isLoadingMemories" class="loading">加载中...</div>
+          <div *ngIf="!isLoadingMemories && memories.length === 0" class="no-memories">
+            暂无记忆
+          </div>
+          <div *ngFor="let memory of memories"
+               [class.selected]="selectedMemoryBotId === memory.botId"
+               class="memory-bot-item"
+               (click)="selectMemoryBot(memory.botId)">
+            <div class="bot-name">{{ memory.botName }}</div>
+          </div>
+        </div>
+
+        <!-- Memory Content (70%) -->
+        <div class="memory-content-area">
+          <h3>记忆内容</h3>
+          <div *ngIf="selectedMemoryBotId === null" class="no-selection">
+            请从左侧选择一个机器人
+          </div>
+          <div *ngIf="selectedMemoryBotId !== null">
+            <div class="display">{{ memoryContent }}</div>
+            <div class="memory-actions">
+              <button (click)="deleteMemory()" class="delete-button">删除</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

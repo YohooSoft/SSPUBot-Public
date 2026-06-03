@@ -1,0 +1,40 @@
+<app-topbar-component *ngIf="deviceInfo?.browser !== 'Unknown'">
+    <h1 left class="text-lg font-bold" [routerLink]="['/']">
+        {{ websiteDesignService.websiteTitle }}
+    </h1>
+    <h2 left class="text-base" [routerLink]="[link.path]" *ngFor="let link of websiteDesignService.navLinksLeft">
+        {{ link.label }}
+    </h2>
+
+    <h2 right class="text-base" [routerLink]="[link.path]" *ngFor="let link of websiteDesignService.navLinksRight">
+        {{ link.label }}
+    </h2>
+    <h2 right class="text-base" [routerLink]="['/login']" *ngIf="!isLoggedIn()">登录</h2>
+    <app-user-profile right *ngIf="isLoggedIn()"></app-user-profile>
+</app-topbar-component>
+<app-topbar-component *ngIf="deviceInfo?.browser === 'Unknown'">
+    <h1 left style="font-size: 1.125rem; font-weight: 700; line-height: calc(1.75 / 1.125)">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            {{ websiteDesignService.websiteTitle }}
+        </a>
+    </h1>
+    <h2 left *ngFor="let link of websiteDesignService.navLinksLeft"
+        style="font-size: 1rem; line-height: calc(1.5 / 1); margin-left: 12px;">
+        <a href="{{ link.path }}" style="text-decoration: none; color: inherit;">
+            {{ link.label }}
+        </a>
+    </h2>
+
+    <h2 right *ngFor="let link of websiteDesignService.navLinksRight"
+        style="font-size: 1rem; line-height: calc(1.5 / 1); margin-left: 12px;">
+        <a href="{{ link.path }}" style="text-decoration: none; color: inherit;">
+            {{ link.label }}
+        </a>
+    </h2>
+</app-topbar-component>
+<router-outlet></router-outlet>
+<app-footer-component *ngIf="this.matched">
+</app-footer-component>
+<app-footer-component *ngIf="!this.matched"
+                      style="position: fixed; bottom: 0; width: 100%;">
+</app-footer-component>

@@ -1,0 +1,153 @@
+<div class="bot-memory-container">
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>加载中...</p>
+  </div>
+
+  <!-- No Bots Message -->
+  <div *ngIf="!loading && bots.length === 0" class="empty-state">
+    <div class="empty-icon">🤖</div>
+    <h2>还没有机器人</h2>
+    <p>请先创建一个机器人来管理记忆</p>
+  </div>
+
+  <!-- Left-Right Layout -->
+  <div *ngIf="!loading && bots.length > 0" class="memory-layout">
+    <!-- Left Sidebar: Bot List -->
+    <div class="bot-list-sidebar">
+      <h2>机器人列表</h2>
+      <div class="bot-list">
+        <div
+          *ngFor="let bot of bots"
+          class="bot-item"
+          [class.selected]="selectedBotId === bot.id"
+          (click)="selectBot(bot.id)">
+          <div class="bot-item-avatar">
+            <img *ngIf="bot.avatarUrl" [src]="bot.avatarUrl" [alt]="bot.name">
+            <div *ngIf="!bot.avatarUrl" class="bot-item-avatar-placeholder">
+              {{ bot.name.charAt(0) }}
+            </div>
+          </div>
+          <div class="bot-item-info">
+            <h3>{{ bot.name }}</h3>
+            <span *ngIf="hasMemory(bot.id)" class="status-badge status-active">有记忆</span>
+            <span *ngIf="!hasMemory(bot.id)" class="status-badge status-inactive">无记忆</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Memory Details -->
+    <div class="memory-detail-panel" *ngIf="selectedBotId !== null">
+      <ng-container *ngFor="let bot of bots">
+        <div *ngIf="bot.id === selectedBotId" class="memory-detail">
+          <!-- Bot Header -->
+          <div class="detail-header">
+            <div class="bot-info">
+              <div class="bot-avatar" *ngIf="bot.avatarUrl">
+                <img [src]="bot.avatarUrl" [alt]="bot.name">
+              </div>
+              <div class="bot-avatar-placeholder" *ngIf="!bot.avatarUrl">
+                {{ bot.name.charAt(0) }}
+              </div>
+              <div class="bot-details">
+                <h2>{{ bot.name }}</h2>
+                <p *ngIf="bot.description" class="bot-description">{{ bot.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display Mode -->
+          <div *ngIf="editingBotId !== bot.id" class="memory-display">
+            <h3>记忆内容</h3>
+            <div *ngIf="hasMemory(bot.id)" class="memory-content">
+              <div class="memory-text">{{ getMemoryForBot(bot.id)?.content }}</div>
+              <div class="memory-meta">
+                <span *ngIf="getMemoryForBot(bot.id)?.updatedAt">
+                  最后更新: {{ getMemoryForBot(bot.id)?.updatedAt }}
+                </span>
+              </div>
+            </div>
+            <div *ngIf="!hasMemory(bot.id)" class="no-memory">
+              <p>该机器人还没有记忆</p>
+            </div>
+
+            <div class="memory-actions">
+              <button (click)="startEdit(bot.id)" class="btn btn-primary">
+                {{ hasMemory(bot.id) ? '编辑记忆' : '添加记忆' }}
+              </button>
+              <button
+                (click)="generateMemory(bot.id)"
+                class="btn btn-secondary"
+                [disabled]="isGenerating(bot.id)">
+                {{ isGenerating(bot.id) ? '生成中...' : '从聊天生成' }}
+              </button>
+              <button
+                *ngIf="hasMemory(bot.id)"
+                (click)="confirmDelete(bot.id)"
+                class="btn btn-danger">
+                删除记忆
+              </button>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <div *ngIf="editingBotId === bot.id" class="memory-edit">
+            <h3>编辑记忆</h3>
+            <div class="form-group">
+              <label>记忆内容</label>
+              <textarea
+                [(ngModel)]="editingContent"
+                placeholder="输入关于该机器人的记忆内容..."
+                rows="12"
+                class="form-control"></textarea>
+              <small class="form-hint">
+                记忆内容将帮助机器人更好地理解您的偏好和需求
+              </small>
+            </div>
+
+            <div class="edit-actions">
+              <button
+                (click)="saveMemory(bot.id)"
+                class="btn btn-primary"
+                [disabled]="saving || !editingContent.trim()">
+                {{ saving ? '保存中...' : '保存' }}
+              </button>
+              <button
+                (click)="cancelEdit()"
+                class="btn btn-secondary"
+                [disabled]="saving">
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>确认删除</h3>
+      </div>
+      <div class="modal-body">
+        <p>确定要删除这个机器人的记忆吗？此操作无法撤销。</p>
+      </div>
+      <div class="modal-footer">
+        <button (click)="cancelDelete()" class="btn btn-secondary">取消</button>
+        <button *ngIf="deleteTargetBotId !== null" (click)="deleteMemory(deleteTargetBotId)" class="btn btn-danger">删除</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,353 @@
+<div class="admin-container">
+    <h1 class="admin-title">管理员页面</h1>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button
+            [class.active]="activeTab === 'users'"
+            (click)="switchTab('users')"
+            class="tab-button">
+            用户管理
+        </button>
+        <button
+            [class.active]="activeTab === 'bots'"
+            (click)="switchTab('bots')"
+            class="tab-button">
+            机器人管理
+        </button>
+        <button
+            [class.active]="activeTab === 'spiders'"
+            (click)="switchTab('spiders')"
+            class="tab-button">
+            爬虫管理
+        </button>
+        <button
+            [class.active]="activeTab === 'synonyms'"
+            (click)="switchTab('synonyms')"
+            class="tab-button">
+            同义词管理
+        </button>
+    </div>
+
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+        <h2>用户列表</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>显示名</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let user of users">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.displayName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ getUserStatusText(user.status) }}</td>
+                    <td>{{ user.createdAt | date:'yyyy-MM-dd' }}</td>
+                    <td>
+                        <button
+                            *ngIf="user.status !== 2 && user.id !== currentUser?.id"
+                            (click)="banUser(user)"
+                            class="btn btn-danger">
+                            封禁
+                        </button>
+                        <button
+                            *ngIf="user.status === 2"
+                            (click)="unbanUser(user)"
+                            class="btn btn-success">
+                            解封
+                        </button>
+                        <span *ngIf="user.id === currentUser?.id" class="text-muted">当前用户</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bots Tab -->
+    <div *ngIf="activeTab === 'bots'" class="tab-content">
+        <div class="header-with-button">
+            <h2>机器人列表</h2>
+            <button (click)="openBotModal()" class="btn btn-primary">添加机器人</button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>描述</th>
+                    <th>模型</th>
+                    <th>温度</th>
+                    <th>Top-K</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let bot of bots">
+                    <td>{{ bot.id }}</td>
+                    <td>{{ bot.name }}</td>
+                    <td>{{ truncateDescription(bot.description, 30) }}</td>
+                    <td>{{ bot.selectedModel }}</td>
+                    <td>{{ bot.temperature || 'N/A' }}</td>
+                    <td>{{ bot.topK || 'N/A' }}</td>
+                    <td>
+                        <img
+                            [src]="bot.isActive ? 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%2328a745%22/%3E%3Cpath d=%22M9 12l2 2 4-4%22 stroke=%22white%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E' : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23dc3545%22/%3E%3Cpath d=%22M8 8l8 8M16 8l-8 8%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22/%3E%3C/svg%3E'"
+                            [alt]="bot.isActive ? '激活' : '停用'"
+                            [title]="bot.isActive ? '激活' : '停用'"
+                            class="status-icon">
+                        <span *ngIf="bot.isDefault" class="default-badge" title="默认机器人">⭐</span>
+                    </td>
+                    <td>
+                        <button (click)="openBotModal(bot)" class="btn btn-info">编辑</button>
+                        <button (click)="setDefaultBot(bot)" class="btn btn-primary" [disabled]="bot.isDefault">
+                            设为默认
+                        </button>
+                        <button (click)="deleteBot(bot)" class="btn btn-danger">删除</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Spiders Tab -->
+    <div *ngIf="activeTab === 'spiders'" class="tab-content">
+        <h2>爬虫列表</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>描述</th>
+                    <th>状态</th>
+                    <th>运行时间</th>
+                    <th>最后运行</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let spider of spiders">
+                    <td>{{ spider.name }}</td>
+                    <td>{{ spider.description }}</td>
+                    <td>{{ getSpiderStatusText(spider.status) }}</td>
+                    <td>{{ formatRuntime(spider.runtimeSeconds || 0) }}</td>
+                    <td>
+                        <span>{{ formatLastRunTimeShort(spider.lastRunTime) }}</span>
+                        <span
+                            *ngIf="spider.lastRunTime"
+                            class="time-info-icon"
+                            [title]="formatLastRunTimeFull(spider.lastRunTime)"
+                            [attr.aria-label]="'完整时间: ' + formatLastRunTimeFull(spider.lastRunTime)"
+                            role="tooltip">❓</span>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <div class="btn btn-secondary dropdown-toggle" (click)="toggleSpiderDropdown(spider.name)">
+                                操作
+                            </div>
+                            <div class="dropdown-menu" [class.show]="isSpiderDropdownOpen(spider.name)">
+                                <a class="dropdown-item" [class.disabled]="spider.status === 'running'"
+                                   (click)="startSpider(spider); closeSpiderDropdown()">启动</a>
+                                <a class="dropdown-item" [class.disabled]="spider.status !== 'running'"
+                                   (click)="stopSpider(spider); closeSpiderDropdown()">停止</a>
+                                <a class="dropdown-item" (click)="viewSpiderProgress(spider); closeSpiderDropdown()">查看详情</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Synonyms Tab -->
+    <div *ngIf="activeTab === 'synonyms'" class="tab-content">
+        <div class="header-with-button">
+            <h2>同义词列表</h2>
+            <button (click)="openSynonymModal()" class="btn btn-primary">添加同义词</button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>主词</th>
+                    <th>同义词</th>
+                    <th>分类</th>
+                    <th>描述</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let synonym of synonyms">
+                    <td>{{ synonym.id }}</td>
+                    <td>{{ synonym.word }}</td>
+                    <td>{{ truncateText(synonym.synonyms, 50) }}</td>
+                    <td>{{ synonym.category || '-' }}</td>
+                    <td>{{ truncateText(synonym.description, 30) }}</td>
+                    <td>{{ formatDate(synonym.createdAt) }}</td>
+                    <td>
+                        <button (click)="openSynonymModal(synonym)" class="btn btn-success">编辑</button>
+                        <button (click)="deleteSynonym(synonym)" class="btn btn-danger">删除</button>
+                    </td>
+                </tr>
+                <tr *ngIf="synonyms.length === 0">
+                    <td colspan="7" class="text-center">暂无同义词</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bot Modal -->
+    <div *ngIf="showBotModal" class="modal-overlay" (click)="closeBotModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <h2>{{ editingBot ? '编辑机器人' : '添加机器人' }}</h2>
+            <form (ngSubmit)="saveBot()">
+                <div class="form-group">
+                    <label>名称 *</label>
+                    <input type="text" [(ngModel)]="botForm.name" name="name" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea [(ngModel)]="botForm.description" name="description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>头像URL</label>
+                    <input type="text" [(ngModel)]="botForm.avatarUrl" name="avatarUrl" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>系统提示词 *</label>
+                    <textarea [(ngModel)]="botForm.systemPrompt" name="systemPrompt" required
+                              class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>模型</label>
+                    <input type="text" [(ngModel)]="botForm.selectedModel" name="selectedModel" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="password" [(ngModel)]="botForm.apiKey" name="apiKey" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Base URL</label>
+                    <input type="text" [(ngModel)]="botForm.baseUrl" name="baseUrl" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>温度 (Temperature)</label>
+                    <input type="number" [(ngModel)]="botForm.temperature" name="temperature" step="0.1" min="0" max="2"
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Top-K</label>
+                    <input type="number" [(ngModel)]="botForm.topK" name="topK" min="1" max="100" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" [(ngModel)]="botForm.isActive" name="isActive">
+                        激活
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" [(ngModel)]="botForm.isDefault" name="isDefault">
+                        设为默认机器人（/chat页面自动选中）
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" (click)="closeBotModal()" class="btn btn-secondary">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Spider Modal -->
+    <div *ngIf="showSpiderModal" class="modal-overlay" (click)="closeSpiderModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <h2>{{ editingSpider ? '编辑爬虫' : '添加爬虫' }}</h2>
+            <form (ngSubmit)="saveSpider()">
+                <div class="form-group">
+                    <label>名称 *</label>
+                    <input type="text" [(ngModel)]="spiderForm.name" name="name" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea [(ngModel)]="spiderForm.description" name="description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>爬虫类名 *</label>
+                    <input type="text" [(ngModel)]="spiderForm.spiderClass" name="spiderClass" required
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>起始URLs (逗号分隔)</label>
+                    <textarea [(ngModel)]="spiderForm.startUrls" name="startUrls" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>允许的域名 (逗号分隔)</label>
+                    <input type="text" [(ngModel)]="spiderForm.allowedDomains" name="allowedDomains"
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" [(ngModel)]="spiderForm.isActive" name="isActive">
+                        激活
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" (click)="closeSpiderModal()" class="btn btn-secondary">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Synonym Modal -->
+<div *ngIf="showSynonymModal" class="modal-overlay" (click)="closeSynonymModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ editingSynonym ? '编辑同义词' : '添加同义词' }}</h2>
+        <form (ngSubmit)="saveSynonym()">
+            <div class="form-group">
+                <label>主词 *</label>
+                <input type="text" [(ngModel)]="synonymForm.word" name="word" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>同义词列表 *</label>
+                <textarea [(ngModel)]="synonymForm.synonyms" name="synonyms" class="form-control" rows="3"
+                          required></textarea>
+            </div>
+            <div class="form-group">
+                <label>分类</label>
+                <input type="text" [(ngModel)]="synonymForm.category" name="category" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <textarea [(ngModel)]="synonymForm.description" name="description" class="form-control"
+                          rows="2"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <button type="button" (click)="closeSynonymModal()" class="btn btn-secondary">取消</button>
+            </div>
+        </form>
+    </div>
+</div>

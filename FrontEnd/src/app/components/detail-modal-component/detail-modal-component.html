@@ -1,0 +1,88 @@
+<div class="modal-content glass-effect">
+
+    <!-- === 头部区域 === -->
+    <div class="modal-header">
+        <div class="header-left">
+            <!-- 🔴 返回按钮：仅在有选中文章时显示 -->
+            <button *ngIf="selectedPost" class="back-btn" (click)="backToList()">
+                <span>←</span>
+            </button>
+
+            <!-- 标题：列表时显示网格名，详情时显示文章名 -->
+            <h2 [class.detail-title]="selectedPost">
+                {{ selectedPost ? selectedPost.postName : gridName }}
+            </h2>
+        </div>
+
+        <button class="close-btn" (click)="closeModal()" aria-label="Close">
+            <span>✕</span>
+        </button>
+    </div>
+
+    <!-- === 内容区域 === -->
+    <div class="modal-body">
+
+        <!-- 加载与空状态 (保持不变) -->
+        <div *ngIf="loading" class="status-msg">加载中...</div>
+        <div *ngIf="!loading && data.length === 0" class="status-msg">暂无相关内容</div>
+
+        <!-- === 场景1: 列表视图 (没有选中文章时显示) === -->
+        <ul class="detail-list" *ngIf="!loading && data.length > 0 && !selectedPost">
+            <li *ngFor="let item of data; index as i">
+                <span class="badge">{{ i + 1 }}</span>
+                <!-- 🔴 点击触发 viewDetail -->
+                <a [href]="item.postUrl"
+                   (click)="viewDetail($event, item)"
+                   class="link-item">
+                    {{ item.postName }}
+                </a>
+            </li>
+        </ul>
+
+        <!-- === 场景2: 详情视图 (有选中文章时显示) === -->
+        <div class="post-detail" *ngIf="selectedPost">
+
+            <!-- 发布时间 -->
+            <div class="meta-info">
+                <span class="label">发布时间：</span>
+                <span class="value">{{ selectedPost.postReleaseTime || '未知' }}</span>
+            </div>
+
+            <!-- 简要内容 -->
+            <div class="content-box">
+                <!-- 如果内容包含 HTML 标签，建议使用 [innerHTML]，否则直接 {{ }} -->
+                <p>{{ selectedPost.postSimplifiedContent || '暂无简介' }}</p>
+            </div>
+
+            <!-- 文件信息 -->
+            <div class="file-info-container" *ngIf="parsedFileList.length > 0">
+                <div class="info-title">相关文件：</div>
+
+                <div class="file-list">
+                    <!-- 遍历解析后的文件数组 -->
+                    <ng-container *ngFor="let file of parsedFileList">
+                        <div class="file-chip" (click)="window.open(file, '_blank')">
+                            <!-- 动态获取图标和颜色 -->
+                            <span class="file-icon"
+                                  [style.color]="getFileIcon(file).color">
+                {{ getFileIcon(file).icon }}
+            </span>
+                            <span class="file-name">
+                                {{ file.substring(file.lastIndexOf('/') + 1) }}
+                            </span>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <!-- 跳转组件 (底部按钮) -->
+            <div class="action-area">
+                <a [href]="selectedPost.postUrl" target="_blank" class="primary-btn">
+                    访问原文链接 ↗
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</div>

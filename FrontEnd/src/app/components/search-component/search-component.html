@@ -1,0 +1,77 @@
+<div class="search-page">
+  <!-- 搜索框 -->
+  <div class="search-bar">
+    <input [(ngModel)]="query" type="text"
+           placeholder="请输入标题关键词..."
+           (keyup.enter)="onSearch()" />
+    <button (click)="onSearch()" [disabled]="isLoading">
+      {{ isLoading ? '搜索中...' : '搜索' }}
+    </button>
+  </div>
+
+  <!-- 高级搜索按钮 -->
+  <div class="advanced-search">
+    <button class="advanced-search-button" (click)="navigateToAdvancedSearch()">
+      高级搜索
+    </button>
+  </div>
+
+  <!-- 结果列表 -->
+  <div class="results-container" *ngIf="hasSearched">
+
+    <!-- 加载中提示 -->
+    <div *ngIf="isLoading" style="text-align: center; color: #666;">
+        正在加载数据...
+    </div>
+
+    <!-- 数据展示区域 (非加载状态下显示) -->
+    <ng-container *ngIf="!isLoading">
+        <h3 class="result-count">找到 {{ totalItems }} 条相关结果</h3>
+
+        <ul class="result-list" *ngIf="totalItems > 0; else noData">
+          <li *ngFor="let post of results" class="result-item">
+            <!-- 标题 -->
+            <div class="post-title">
+              <a [href]="post.postUrl || '#'" target="_blank">
+                 <span [innerHTML]="getHighlightedText(post.postName)"></span>
+              </a>
+            </div>
+
+            <!-- 元数据 -->
+            <div class="post-meta">
+              <span class="source" *ngIf="post.postSource">{{ post.postSource }}</span>
+              <span class="time" *ngIf="post.postReleaseTime">{{ post.postReleaseTime }}</span>
+            </div>
+
+            <!-- 内容摘要 -->
+            <div class="post-snippet">
+              <span [innerHTML]="post.postSimplifiedContent || post.postContent"></span>
+            </div>
+          </li>
+        </ul>
+
+        <!-- 分页控件 -->
+        <!-- 当总数大于每页显示数(10)时才显示分页 -->
+        <div class="pagination" *ngIf="totalItems > pageSize">
+            <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn">
+                上一页
+            </button>
+
+            <span class="page-info">
+                第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+            </span>
+
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn">
+                下一页
+            </button>
+        </div>
+
+        <!-- 无数据模板 -->
+        <ng-template #noData>
+          <div class="no-data">
+            <p>没有找到与 "<strong>{{ query }}</strong>" 相关的结果。</p>
+          </div>
+        </ng-template>
+    </ng-container>
+  </div>
+</div>

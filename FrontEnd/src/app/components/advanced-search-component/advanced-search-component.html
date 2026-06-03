@@ -1,0 +1,105 @@
+<div class="advanced-search-page">
+  <div class="page-header">
+    <button class="back-button" (click)="goBack()">
+      ← 返回
+    </button>
+    <h2>高级搜索</h2>
+  </div>
+
+  <!-- 搜索框 -->
+  <div class="search-bar">
+    <input [(ngModel)]="query" type="text"
+           placeholder="请输入搜索关键词..."
+           (keyup.enter)="onSearch()" />
+    <button (click)="onSearch()" [disabled]="isLoading">
+      {{ isLoading ? '搜索中...' : '搜索' }}
+    </button>
+  </div>
+
+  <!-- 高级搜索选项 -->
+  <div class="advanced-options">
+    <div class="filter-row">
+      <label>来源：</label>
+      <select [(ngModel)]="selectedSource">
+        <option value="">全部来源</option>
+        <option *ngFor="let source of availableSources" [value]="source">
+          {{ source }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-row">
+      <label>时间范围：</label>
+      <div class="date-range">
+        <input type="date" [(ngModel)]="startDate" aria-label="开始日期" />
+        <span class="date-separator">至</span>
+        <input type="date" [(ngModel)]="endDate" aria-label="结束日期" />
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="searchInContent" />
+        <span>搜索文章内容</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 结果列表 -->
+  <div class="results-container" *ngIf="hasSearched">
+
+    <!-- 加载中提示 -->
+    <div *ngIf="isLoading" style="text-align: center; color: #666;">
+        正在加载数据...
+    </div>
+
+    <!-- 数据展示区域 (非加载状态下显示) -->
+    <ng-container *ngIf="!isLoading">
+        <h3 class="result-count">找到 {{ totalItems }} 条相关结果</h3>
+
+        <ul class="result-list" *ngIf="totalItems > 0; else noData">
+          <li *ngFor="let post of results" class="result-item">
+            <!-- 标题 -->
+            <div class="post-title">
+              <a [href]="post.postUrl || '#'" target="_blank">
+                 <span [innerHTML]="getHighlightedText(post.postName)"></span>
+              </a>
+            </div>
+
+            <!-- 元数据 -->
+            <div class="post-meta">
+              <span class="source" *ngIf="post.postSource">{{ post.postSource }}</span>
+              <span class="time" *ngIf="post.postReleaseTime">{{ post.postReleaseTime }}</span>
+            </div>
+
+            <!-- 内容摘要 -->
+            <div class="post-snippet">
+              <span [innerHTML]="searchInContent ? getHighlightedText(post.postSimplifiedContent || post.postContent) : (post.postSimplifiedContent || post.postContent)"></span>
+            </div>
+          </li>
+        </ul>
+
+        <!-- 分页控件 -->
+        <div class="pagination" *ngIf="totalItems > pageSize">
+            <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn">
+                上一页
+            </button>
+
+            <span class="page-info">
+                第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+            </span>
+
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn">
+                下一页
+            </button>
+        </div>
+
+        <!-- 无数据模板 -->
+        <ng-template #noData>
+          <div class="no-data">
+            <p>没有找到与 "<strong>{{ query }}</strong>" 相关的结果。</p>
+          </div>
+        </ng-template>
+    </ng-container>
+  </div>
+</div>

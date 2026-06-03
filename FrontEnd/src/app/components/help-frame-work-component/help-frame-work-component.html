@@ -1,0 +1,17 @@
+<div class="sidebar" [style.width.px]="sidebarWidth">
+    <div class="sidebar-header">
+        目录
+    </div>
+    <div class="sidebar-buttons">
+        <button *ngFor="let i of menuItems"
+                [routerLink]="i.route"
+                [class.active]="isActive(i.route)"
+                class="sidebar-button">
+            {{ i.name }}
+        </button>
+    </div>
+</div>
+<div class="resizer" (mousedown)="onResizeStart($event)"></div>
+<div class="content">
+    <router-outlet></router-outlet>
+</div>

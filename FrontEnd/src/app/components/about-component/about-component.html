@@ -1,0 +1,34 @@
+<h2 class="mb-2 text-24px">开发目的</h2>
+<div class="w-full h-px bg-gray-300 mb-3"></div>
+<p class="mb-2 text-base">
+    本网站的开发目的有三：
+</p>
+<ul class="list-disc list-inside mb-4 text-base">
+    <li>
+        为师生提供一个便捷的查询的途径，方便大家快速获取所需信息。
+    </li>
+    <li>
+        使用 Ai 技术提升查询效率和准确性，减少人工查询的时间和精力消耗。
+    </li>
+    <li>
+        通过数据分析和可视化，帮助师生更好地理解和利用信息资源。
+    </li>
+</ul>
+<h2 class="mt-4 mb-2 text-24px">团队成员</h2>
+<div class="w-full h-px bg-gray-300 mb-3"></div>
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-4">
+    <div class="hover-card p-4 bg-white rounded shadow hover:shadow-lg transition duration-300 flex items-center"
+         style="cursor: pointer;"
+         *ngFor="let member of teamMembers" (click)="openLink(member.link)">
+        <app-about-avatar-component [avatarUrl]="member.avatar!"
+                                    alt="头像"
+                                    [type]="member.type!"
+                                    [githubUsername]="member.githubUsername!"/>
+        <div>
+            <h3 class="text-18px font-semibold mb-1" style="user-select: none;">
+                {{ member.name }}
+            </h3>
+            <p class="text-14px text-gray-600" style="user-select: none;">{{ member.description }}</p>
+        </div>
+    </div>
+</div>

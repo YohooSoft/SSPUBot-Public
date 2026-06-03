@@ -1,0 +1,37 @@
+<div class="macos-desktop">
+    <ng-container *ngIf="expandedId !== null">
+
+        <div class="overlay" (click)="closeExpanded()"></div>
+
+        <app-detail-modal
+            [gridName]="gridName"
+            (close)="closeExpanded()">
+        </app-detail-modal>
+
+    </ng-container>
+    <!-- === 修改部分结束 === -->
+
+    <!-- 网格容器 (保持不变，但建议去掉原来的 class.expanded 逻辑，因为现在是弹窗了) -->
+    <div class="grid-container">
+        <div class="widget-card" *ngFor="let grid of gridList">
+            <div class="card-header">
+                <h3>{{ grid.title }}</h3>
+                <button class="icon-btn" (click)="toggleExpand(grid)">
+                    <span>⤢</span>
+                </button>
+            </div>
+
+            <div class="card-content">
+                <ol class="macos-list">
+                    <li *ngFor="let item of grid.items; let i = index">
+                        <span class="index-badge">{{ i + 1 }}</span>
+                        <a href="{{ item.url }}" target="_blank" class="list-text">
+                            {{ item.title }}
+                        </a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+</div>

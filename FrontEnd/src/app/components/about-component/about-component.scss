@@ -1,0 +1,28 @@
+:host {
+    display: block;
+    margin-top: 24px;
+    margin-left: 140px;
+    margin-right: 140px;
+}
+
+.hover-card {
+    background: #fff;
+    border-radius: 8px;
+    width: 300px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+
+    img {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+    }
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
